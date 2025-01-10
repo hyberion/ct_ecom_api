@@ -8,8 +8,15 @@ users_schema = UserSchema(many=True)
 
 @user_bp.route('/', methods=['GET'])
 def get_users():
-    users = User.query.all()
-    return users_schema.jsonify(users)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    users = User.query.paginate(page=page, per_page=per_page)
+    return jsonify({
+        'users': users_schema.dump(users.items),
+        'total': users.total,
+        'pages': users.pages,
+        'current_page': users.page
+    })
 
 @user_bp.route('/<int:id>', methods=['GET'])
 def get_user(id):
